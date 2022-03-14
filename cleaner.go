@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	"context"
 	"log"
 	"os"
 
@@ -19,7 +19,6 @@ func main() {
 	log.Printf("Queue URL : %s", os.Args[1])
 	queueUrl := aws.String(os.Args[1])
 
-	fmt.Println("signal: ", s)
 	cfg, err := config.LoadDefaultConfig(context.TODO())
 	if err != nil {
 		log.Fatalf("unable to load SDK config, %v", err)
