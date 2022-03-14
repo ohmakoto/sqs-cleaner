@@ -1,7 +1,7 @@
 package main
 
 import (
-	"context"
+	"fmt"
 	"log"
 	"os"
 
@@ -12,13 +12,14 @@ import (
 
 func main() {
 	if len(os.Args) < 2 {
-		log.Fatalf("Usage : sqs-cleaner https://sqs.REGION.amazonaws.com/ACCOUNT-ID/NAME")
+		log.Fatalf("Usage : sqs-cleaner https://sqs.<REGION>.amazonaws.com/<ACCOUNT-ID>/<NAME>")
 		os.Exit(1)
 	}
 
 	log.Printf("Queue URL : %s", os.Args[1])
 	queueUrl := aws.String(os.Args[1])
 
+	fmt.Println("signal: ", s)
 	cfg, err := config.LoadDefaultConfig(context.TODO())
 	if err != nil {
 		log.Fatalf("unable to load SDK config, %v", err)
@@ -26,24 +27,18 @@ func main() {
 	}
 
 	svc := sqs.NewFromConfig(cfg)
-	
-	count := 0
+
 	for {
+		log.Printf("ReceiveMessage...")
 		res, err := svc.ReceiveMessage(context.TODO(), &sqs.ReceiveMessageInput{
 			QueueUrl: queueUrl,
 		})
-	
+
 		if err != nil {
 			log.Fatalln(err)
 			os.Exit(1)
 		}
-		if len(res.Messages) == 0 {
-			count++
-			log.Printf("No Messages")
-		} else {
-			count = 0
-		}
-	
+
 		for _, msg := range res.Messages {
 			log.Printf("[%s] %s", *msg.MessageId, *msg.Body)
 			svc.DeleteMessage(context.TODO(), &sqs.DeleteMessageInput{
